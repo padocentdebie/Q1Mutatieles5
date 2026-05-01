@@ -42,8 +42,10 @@
         .correct { background-color: #c8e6c9 !important; }
         .incorrect { background-color: #ffcdd2 !important; }
 
-        .leaderboard { margin-top: 20px; padding: 10px; background: #f9f9f9; border-radius: 8px; }
-        .ovt-input { width: 120px; display: inline-block; }
+        .leaderboard { margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; }
+        .ovt-input, .als-dan-input { width: 100px; display: inline-block; padding: 5px; margin: 0; }
+        
+        .instr-box { background: #e3f2fd; padding: 15px; border-left: 5px solid var(--primary); border-radius: 4px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -51,6 +53,7 @@
     <nav id="main-nav">
         <button class="nav-btn" onclick="showScreen(2)">1. Bijv. Nw</button>
         <button class="nav-btn" onclick="showScreen(3)">2. Digibord</button>
+        <button class="nav-btn" onclick="showScreen(35)">2b. Als/Dan</button>
         <button class="nav-btn" onclick="showScreen(4)">3. Trappen</button>
         <button class="nav-btn" onclick="showScreen(5)">4. OVT Oefening</button>
         <button class="nav-btn" onclick="showScreen(6)">5. ASTMA</button>
@@ -89,7 +92,6 @@
                 fluitje.
             </p>
             <img src="fluitje.png" alt="Fluitje" style="max-width: 200px; display: block; margin: 20px 0;">
-            
             <div style="margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px;">
                 <h4>Snel naar Digibord:</h4>
                 <textarea id="quickInputS2" placeholder="Typ een zin voor het digibord..."></textarea>
@@ -104,11 +106,37 @@
             <div id="label-layer-3" class="drag-layer"></div>
         </div>
         <div class="control-panel">
-            <input type="text" id="boardInputDirect" placeholder="Voeg label toe.oefen ook met stam +te of -de..." style="width: 200px; margin: 0;">
+            <input type="text" id="boardInputDirect" placeholder="Voeg label toe..." style="width: 200px; margin: 0;">
             <button class="btn-action" onclick="sendToBoard('boardInputDirect')" style="background:var(--primary); color:white;">➕ Toevoegen</button>
             <button class="btn-action" onclick="togglePen(3)" id="pen-btn-3">🖊️ Pen</button>
             <button class="btn-action" onclick="clearDrawings(3)">🧹 Wis Tekening</button>
             <button class="btn-action" onclick="clearBoard(3)" style="background:var(--accent); color:white;">🗑️ Wis Labels</button>
+        </div>
+    </div>
+
+    <div id="screen-35" class="screen">
+        <div class="content-container">
+            <h3>Taalkunde: Als of Dan?</h3>
+            <div class="instr-box">
+                <strong>Instructie:</strong>
+                <ul>
+                    <li>Gebruik <b>ALS</b> bij een <i>gelijkheid</i> (stellende trap). Woorden als: <i>even, net zo, evenveel</i>.</li>
+                    <li>Gebruik <b>DAN</b> bij een <i>verschil</i> (vergrotende trap). Woorden die eindigen op <i>-er</i> of <i>meer/minder</i>.</li>
+                </ul>
+                <em>Voorbeeld:</em> "De verdachte rende even hard <b>als</b> de agent, maar de surveillanceauto reed sneller <b>dan</b> de vluchtauto."
+            </div>
+            
+            <table>
+                <thead>
+                    <tr><th>Nr.</th><th>Zin (Vul in: als / dan)</th></tr>
+                </thead>
+                <tbody id="alsDanTabel"></tbody>
+            </table>
+
+            <div class="leaderboard">
+                <h4>Leaderboard: Als/Dan Meesters</h4>
+                <div id="lb-als-dan">Nog geen scores...</div>
+            </div>
         </div>
     </div>
 
@@ -117,17 +145,12 @@
             <h3>Overzicht Trappen van Vergelijking</h3>
             <table>
                 <thead>
-                    <tr>
-                        <th>Stellende trap</th>
-                        <th>Vergrotende trap</th>
-                        <th>Overtreffende trap</th>
-                    </tr>
+                    <tr><th>Stellende trap</th><th>Vergrotende trap</th><th>Overtreffende trap</th></tr>
                 </thead>
-                <tbody id="trappenTabel">
-                    </tbody>
+                <tbody id="trappenTabel"></tbody>
             </table>
             <div class="leaderboard" id="leaderboardTrappen">
-                <h4>Leaderboard (Top 5)</h4>
+                <h4>Leaderboard: Trappen</h4>
                 <div id="lb-content">Nog geen scores...</div>
             </div>
         </div>
@@ -136,20 +159,15 @@
     <div id="screen-5" class="screen">
         <div class="content-container">
             <h3>OVT: Zwakke werkwoorden (d/t)</h3>
-            <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+            <div class="instr-box">
                 <strong>Instructie:</strong> Gebruik 't kofschip-x. <br>
                 <em>Voorbeeld:</em> Antwoorden -> Stam: antwoord -> OVT: antwoordde
             </div>
             <table>
                 <thead>
-                    <tr>
-                        <th>Hele werkwoord</th>
-                        <th>Stam</th>
-                        <th>OVT (Enkelvoud)</th>
-                    </tr>
+                    <tr><th>Hele werkwoord</th><th>Stam</th><th>OVT (Enkelvoud)</th></tr>
                 </thead>
-                <tbody id="ovtTabel">
-                    </tbody>
+                <tbody id="ovtTabel"></tbody>
             </table>
         </div>
     </div>
@@ -192,6 +210,34 @@
         let dragLid = null;
         let dragOffset = { x: 0, y: 0 };
 
+        const alsDanZinnen = [
+            { z: "De hoofdagent is ouder ___ de aspirant.", a: "dan" },
+            { z: "Deze melding is net zo urgent ___ de vorige.", a: "als" },
+            { z: "De getuige was kleiner ___ de dader.", a: "dan" },
+            { z: "Hij reed harder ___ de toegestane snelheid.", a: "dan" },
+            { z: "De surveillance-eenheid was even snel ___ de motoragent.", a: "als" },
+            { z: "Het verhoor duurde langer ___ verwacht.", a: "dan" },
+            { z: "De politiehond is sterker ___ hij eruitziet.", a: "dan" },
+            { z: "Er waren minder omstanders ___ gisteren.", a: "dan" },
+            { z: "Is een proces-verbaal net zo belangrijk ___ een mutatie?", a: "als" },
+            { z: "De arrestant was agressiever ___ de vorige keer.", a: "dan" },
+            { z: "De wapenstok is korter ___ een surveillance-auto.", a: "dan" },
+            { z: "Het bewijs is duidelijker ___ we dachten.", a: "dan" },
+            { z: "De meldkamer is vaker bezet ___ vorig jaar.", a: "dan" },
+            { z: "De rechercheur is even slim ___ de verdachte.", a: "als" },
+            { z: "De boete is hoger ___ de schade.", a: "dan" },
+            { z: "Zijn verklaring is hetzelfde ___ die van zijn vrouw.", a: "als" },
+            { z: "De ME is breder inzetbaar ___ een wijkagent.", a: "dan" },
+            { z: "Het slachtoffer was rustiger ___ verwacht.", a: "dan" },
+            { z: "De cel is minder ruim ___ een woonkamer.", a: "dan" },
+            { z: "Hij spreekt minder duidelijk ___ zijn collega.", a: "dan" },
+            { z: "De alcoholtest is betrouwbaarder ___ een observatie.", a: "dan" },
+            { z: "De briefing duurde even kort ___ de pauze.", a: "als" },
+            { z: "De wegversperring was groter ___ voorzien.", a: "dan" },
+            { z: "De inbraak was heftiger ___ de diefstal.", a: "dan" },
+            { z: "Zijn strafblad is langer ___ mijn arm.", a: "dan" }
+        ];
+
         const trappenData = [
             {s: "Lekker", v: "lekkerder", o: "lekkerst"},
             {s: "Beu", v: "beuer", o: "beust"},
@@ -202,29 +248,10 @@
             {s: "Skeer", v: "skeerder", o: "skeerst"},
             {s: "Groot", v: "groter", o: "grootst"},
             {s: "Mooi", v: "mooier", o: "mooist"},
-            {s: "Snel", v: "sneller", o: "snelst"},
-            {s: "Hoog", v: "hoger", o: "hoogst"},
-            {s: "Klein", v: "kleiner", o: "kleinst"},
-            {s: "Koud", v: "kouder", o: "koudst"},
-            {s: "Warm", v: "warmer", o: "warmst"},
-            {s: "Zwaar", v: "zwaarder", o: "zwaarst"},
-            {s: "Licht", v: "lichter", o: "lichtst"},
-            {s: "Hard", v: "harder", o: "hardst"},
-            {s: "Zacht", v: "zachter", o: "zachtst"},
-            {s: "Rijk", v: "rijker", o: "rijkst"},
-            {s: "Arm", v: "armer", o: "armst"},
-            {s: "Oud", v: "ouder", o: "oudst"},
-            {s: "Jong", v: "jonger", o: "jongst"},
-            {s: "Lang", v: "langst", o: "langst"},
-            {s: "Kort", v: "korter", o: "kortst"},
-            {s: "Vers", v: "verser", o: "verst"}
+            {s: "Snel", v: "sneller", o: "snelst"}
         ];
 
-        const ovtData = [
-            "Antwoorden", "Brandden", "Landen", "Meldden", "Schudden", "Wenden", "Zetten", "Praten", "Lachen", "Werken",
-            "Wachten", "Posten", "Rusten", "Fietsen", "Mixen", "Krabben", "Bloeden", "Doden", "Laden", "Redden",
-            "Smeden", "Stoten", "Vatten", "Plakken", "Koken", "Schoppen", "Puffen", "Sausen", "Draaien", "Maaien"
-        ];
+        const ovtData = ["Antwoorden", "Brandden", "Landen", "Meldden", "Schudden", "Wenden", "Zetten", "Praten", "Lachen", "Werken"];
 
         window.login = () => {
             const klas = document.getElementById('classSelect').value;
@@ -245,7 +272,8 @@
             const target = document.getElementById(`screen-${n}`);
             if(target) target.classList.add('active');
             document.querySelectorAll('.nav-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', (i+2) === n);
+                const screenIds = [2, 3, 35, 4, 5, 6, 7];
+                btn.classList.toggle('active', screenIds[i] === n);
             });
             if([3,6].includes(n)) resizeCanvas(n);
         };
@@ -255,26 +283,31 @@
             const txt = inputEl.value;
             if(!window.currentClass || !txt.trim()) return alert("Typ een zin!");
             push(ref(db, `classes/${window.currentClass}/labels/s3`), { text: txt, x: 100, y: 100 })
-                .then(() => {
-                    alert("Toegevoegd aan digibord!");
-                    inputEl.value = "";
-                });
+                .then(() => { alert("Toegevoegd!"); inputEl.value = ""; });
         };
 
         function renderExercises() {
+            // Als/Dan oefening
+            const alsDanBody = document.getElementById('alsDanTabel');
+            alsDanBody.innerHTML = alsDanZinnen.map((z, i) => `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${z.z.replace('___', `<input type="text" class="als-dan-input" oninput="checkAlsDan(${i}, this)">`)}</td>
+                </tr>
+            `).join('');
+
+            // Trappen
             const trappenBody = document.getElementById('trappenTabel');
             trappenBody.innerHTML = trappenData.map((d, i) => {
-                // We kiezen willekeurig welke kolom we 'vastzetten' (0=s, 1=v, 2=o)
                 const fixedCol = i % 3; 
-                return `
-                    <tr>
-                        <td>${fixedCol === 0 ? d.s : `<input type="text" oninput="checkTrap(${i}, 's', this)" placeholder="...">`}</td>
-                        <td>${fixedCol === 1 ? d.v : `<input type="text" oninput="checkTrap(${i}, 'v', this)" placeholder="...">`}</td>
-                        <td>${fixedCol === 2 ? d.o : `<input type="text" oninput="checkTrap(${i}, 'o', this)" placeholder="...">`}</td>
-                    </tr>
-                `;
+                return `<tr>
+                    <td>${fixedCol === 0 ? d.s : `<input type="text" oninput="checkTrap(${i}, 's', this)">`}</td>
+                    <td>${fixedCol === 1 ? d.v : `<input type="text" oninput="checkTrap(${i}, 'v', this)">`}</td>
+                    <td>${fixedCol === 2 ? d.o : `<input type="text" oninput="checkTrap(${i}, 'o', this)">`}</td>
+                </tr>`;
             }).join('');
 
+            // OVT
             const ovtBody = document.getElementById('ovtTabel');
             ovtBody.innerHTML = ovtData.map((w, i) => `
                 <tr>
@@ -285,14 +318,20 @@
             `).join('');
         }
 
-        window.checkTrap = (index, type, el) => {
-            const correct = trappenData[index][type].toLowerCase();
-            if(el.value.toLowerCase().trim() === correct) {
+        window.checkAlsDan = (index, el) => {
+            if(el.value.toLowerCase().trim() === alsDanZinnen[index].a) {
                 el.classList.add('correct');
-                updateScore();
+                updateScore('alsDan');
             } else {
                 el.classList.remove('correct');
             }
+        };
+
+        window.checkTrap = (index, type, el) => {
+            if(el.value.toLowerCase().trim() === trappenData[index][type].toLowerCase()) {
+                el.classList.add('correct');
+                updateScore('trappen');
+            } else { el.classList.remove('correct'); }
         };
 
         window.checkOVT = (index, type, el) => {
@@ -300,17 +339,14 @@
             const stam = werkwoord.slice(0, -2); 
             const verleden = (stam.endsWith('d') || stam.endsWith('t')) ? stam + 'de' : stam + 'te'; 
             const target = type === 's' ? stam : verleden;
-            
-            if(el.value.toLowerCase().trim() === target) {
-                el.classList.add('correct');
-            } else {
-                el.classList.remove('correct');
-            }
+            if(el.value.toLowerCase().trim() === target) el.classList.add('correct');
+            else el.classList.remove('correct');
         };
 
-        function updateScore() {
-            const score = document.querySelectorAll('#trappenTabel .correct').length;
-            set(ref(db, `classes/${window.currentClass}/scores/${window.userName}`), score);
+        function updateScore(type) {
+            const selector = type === 'alsDan' ? '.als-dan-input.correct' : '#trappenTabel .correct';
+            const score = document.querySelectorAll(selector).length;
+            set(ref(db, `classes/${window.currentClass}/scores/${type}/${window.userName}`), score);
         }
 
         function setupSync() {
@@ -334,13 +370,20 @@
                 });
             });
 
-            onValue(ref(db, `classes/${window.currentClass}/scores`), (snap) => {
+            onValue(ref(db, `classes/${window.currentClass}/scores/trappen`), (snap) => {
                 const scores = snap.val() || {};
                 const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0,5);
                 document.getElementById('lb-content').innerHTML = sorted.map(([name, score]) => `<div>${name}: ${score}</div>`).join('');
             });
+
+            onValue(ref(db, `classes/${window.currentClass}/scores/alsDan`), (snap) => {
+                const scores = snap.val() || {};
+                const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0,5);
+                document.getElementById('lb-als-dan').innerHTML = sorted.map(([name, score]) => `<div>${name}: ${score}</div>`).join('');
+            });
         }
 
+        // --- Drag/Draw/Resize Logic (ongewijzigd) ---
         function setupGlobalDragEvents() {
             const onMove = (e) => {
                 if (!draggingElement) return;
@@ -380,12 +423,16 @@
 
         window.togglePen = (id) => {
             penActive[id] = !penActive[id];
-            document.getElementById(`pen-btn-${id}`).classList.toggle('pen-active', penActive[id]);
+            document.getElementById(`pen-btn-${id}`).classList.toggle('active', penActive[id]);
             document.getElementById(`canvas-${id}`).classList.toggle('active', penActive[id]);
         };
 
         window.clearBoard = (id) => remove(ref(db, `classes/${window.currentClass}/labels/s${id}`));
-        
+        window.clearDrawings = (id) => {
+            const c = document.getElementById(`canvas-${id}`);
+            c.getContext('2d').clearRect(0,0,c.width,c.height);
+            remove(ref(db, `classes/${window.currentClass}/drawings/s${id}`));
+        };
         window.spawnASTMA = (id) => {
             const labels = ["Aanleiding", "Situatie", "Toedracht", "Maatregelen", "Afhandeling"];
             labels.forEach((t, i) => push(ref(db, `classes/${window.currentClass}/labels/s${id}`), { text: t, x: 50, y: 80 + (i*50) }));
@@ -430,7 +477,7 @@
         window.resetDatabase = () => {
             const klas = document.getElementById('classSelect').value;
             if(!klas) return alert("Selecteer een klas!");
-            if(confirm("Alles wissen?")) remove(ref(db, `classes/${klas}`));
+            if(confirm("Alles wissen voor deze klas?")) remove(ref(db, `classes/${klas}`));
         };
     </script>
 </body>
