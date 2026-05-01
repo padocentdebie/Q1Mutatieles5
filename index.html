@@ -42,9 +42,8 @@
         .correct { background-color: #c8e6c9 !important; }
         .incorrect { background-color: #ffcdd2 !important; }
 
-        .leaderboard { margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; }
-        .ovt-input, .als-dan-input { width: 100px; display: inline-block; padding: 5px; margin: 0; }
-        
+        .leaderboard { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; }
+        .ovt-input, .als-dan-input { width: 120px; display: inline-block; padding: 4px; margin: 0; }
         .instr-box { background: #e3f2fd; padding: 15px; border-left: 5px solid var(--primary); border-radius: 4px; margin-bottom: 20px; }
     </style>
 </head>
@@ -53,7 +52,7 @@
     <nav id="main-nav">
         <button class="nav-btn" onclick="showScreen(2)">1. Bijv. Nw</button>
         <button class="nav-btn" onclick="showScreen(3)">2. Digibord</button>
-        <button class="nav-btn" onclick="showScreen(35)">2b. Als/Dan</button>
+        <button class="nav-btn" onclick="showScreen(35)">3b. Als of Dan</button>
         <button class="nav-btn" onclick="showScreen(4)">3. Trappen</button>
         <button class="nav-btn" onclick="showScreen(5)">4. OVT Oefening</button>
         <button class="nav-btn" onclick="showScreen(6)">5. ASTMA</button>
@@ -116,25 +115,24 @@
 
     <div id="screen-35" class="screen">
         <div class="content-container">
-            <h3>Taalkunde: Als of Dan?</h3>
+            <h3>Scherm 3b: De Regel van de Vergrotende Trap</h3>
             <div class="instr-box">
-                <strong>Instructie:</strong>
+                <strong>Didactiek:</strong>
+                <p>In een proces-verbaal is correct taalgebruik essentieel. Kijk altijd naar de vorm van het bijvoeglijk naamwoord:</p>
                 <ul>
-                    <li>Gebruik <b>ALS</b> bij een <i>gelijkheid</i> (stellende trap). Woorden als: <i>even, net zo, evenveel</i>.</li>
-                    <li>Gebruik <b>DAN</b> bij een <i>verschil</i> (vergrotende trap). Woorden die eindigen op <i>-er</i> of <i>meer/minder</i>.</li>
+                    <li>Bij een <b>vergrotende trap</b> (harder, groter, sneller, meer, anders) gebruik je altijd <b>DAN</b>.</li>
+                    <li>Bij een <b>stellende trap</b> (even hard, zo groot, hetzelfde) gebruik je altijd <b>ALS</b>.</li>
                 </ul>
-                <em>Voorbeeld:</em> "De verdachte rende even hard <b>als</b> de agent, maar de surveillanceauto reed sneller <b>dan</b> de vluchtauto."
+                <em>Let op: ook met 'niet' blijft de trap de baas over de regel!</em>
             </div>
-            
             <table>
                 <thead>
                     <tr><th>Nr.</th><th>Zin (Vul in: als / dan)</th></tr>
                 </thead>
                 <tbody id="alsDanTabel"></tbody>
             </table>
-
             <div class="leaderboard">
-                <h4>Leaderboard: Als/Dan Meesters</h4>
+                <h4>Leaderboard: Scherm 3b Meesters</h4>
                 <div id="lb-als-dan">Nog geen scores...</div>
             </div>
         </div>
@@ -150,7 +148,7 @@
                 <tbody id="trappenTabel"></tbody>
             </table>
             <div class="leaderboard" id="leaderboardTrappen">
-                <h4>Leaderboard: Trappen</h4>
+                <h4>Leaderboard (Top 5)</h4>
                 <div id="lb-content">Nog geen scores...</div>
             </div>
         </div>
@@ -159,7 +157,7 @@
     <div id="screen-5" class="screen">
         <div class="content-container">
             <h3>OVT: Zwakke werkwoorden (d/t)</h3>
-            <div class="instr-box">
+            <div class="instr-box" style="background: #e3f2fd;">
                 <strong>Instructie:</strong> Gebruik 't kofschip-x. <br>
                 <em>Voorbeeld:</em> Antwoorden -> Stam: antwoord -> OVT: antwoordde
             </div>
@@ -211,31 +209,31 @@
         let dragOffset = { x: 0, y: 0 };
 
         const alsDanZinnen = [
-            { z: "De hoofdagent is ouder ___ de aspirant.", a: "dan" },
+            { z: "De verdachte rende harder ___ de agent.", a: "dan" },
+            { z: "De getuige is even groot ___ de dader.", a: "als" },
+            { z: "De surveillance-auto is niet sneller ___ de motor.", a: "dan" },
+            { z: "Zijn verklaring is anders ___ de jouwe.", a: "dan" },
+            { z: "De briefing duurde minder lang ___ gepland.", a: "dan" },
+            { z: "Hij is niet zo ervaren ___ zijn collega.", a: "als" },
+            { z: "De boete voor snelheid is hoger ___ vorig jaar.", a: "dan" },
             { z: "Deze melding is net zo urgent ___ de vorige.", a: "als" },
-            { z: "De getuige was niet groter ___ de dader.", a: "dan" }, // Verschil blijft dan
-            { z: "Hij reed harder ___ de toegestane snelheid.", a: "dan" },
-            { z: "De surveillance-auto is niet zo wendbaar ___ de motor.", a: "als" }, // Gelijkheid (ontkend) blijft als
-            { z: "Het verhoor duurde langer ___ verwacht.", a: "dan" },
-            { z: "De politiehond is sterker ___ hij eruitziet.", a: "dan" },
-            { z: "Er waren niet minder omstanders ___ gisteren.", a: "dan" },
-            { z: "Is een proces-verbaal niet even belangrijk ___ een mutatie?", a: "als" },
-            { z: "De arrestant was niet agressiever ___ de vorige keer.", a: "dan" },
-            { z: "De wapenstok is korter ___ een surveillance-auto.", a: "dan" },
-            { z: "Het bewijs is niet duidelijker ___ we dachten.", a: "dan" },
-            { z: "De meldkamer is vaker bezet ___ vorig jaar.", a: "dan" },
-            { z: "De rechercheur is niet zo slim ___ de verdachte.", a: "als" },
-            { z: "De boete is niet hoger ___ de schade.", a: "dan" },
-            { z: "Zijn verklaring is niet hetzelfde ___ die van zijn vrouw.", a: "als" },
-            { z: "De ME is breder inzetbaar ___ een wijkagent.", a: "dan" },
-            { z: "Het slachtoffer was niet rustiger ___ verwacht.", a: "dan" },
-            { z: "De cel is minder ruim ___ een woonkamer.", a: "dan" },
-            { z: "Hij spreekt niet zo duidelijk ___ zijn collega.", a: "als" },
-            { z: "De alcoholtest is niet betrouwbaarder ___ een observatie.", a: "dan" },
-            { z: "De briefing duurde niet even kort ___ de pauze.", a: "als" },
-            { z: "De wegversperring was niet groter ___ voorzien.", a: "dan" },
-            { z: "De inbraak was heftiger ___ de diefstal.", a: "dan" },
-            { z: "Zijn strafblad is niet langer ___ mijn arm.", a: "dan" }
+            { z: "Het slachtoffer was rustiger ___ de omstanders.", a: "dan" },
+            { z: "De wapenstok is korter ___ het stroomstootwapen.", a: "dan" },
+            { z: "Zij was niet zo agressief ___ de eerste verdachte.", a: "als" },
+            { z: "De alcoholtest is nauwkeuriger ___ de looptest.", a: "dan" },
+            { z: "Er waren meer demonstranten ___ aangemeld.", a: "dan" },
+            { z: "De cel is niet groter ___ vier vierkante meter.", a: "dan" },
+            { z: "Hij reed niet zo hard ___ zijn voorganger.", a: "als" },
+            { z: "Dit dossier is dikker ___ het vorige.", a: "dan" },
+            { z: "De rechercheur is even scherp ___ de officier.", a: "als" },
+            { z: "De overval was heftiger ___ de inbraak.", a: "dan" },
+            { z: "De verdachte is niet ouder ___ achttien jaar.", a: "dan" },
+            { z: "De situatie was minder dreigend ___ geschetst.", a: "dan" },
+            { z: "Hij werkt hier al langer ___ ik.", a: "dan" },
+            { z: "Zijn strafblad is niet langer ___ dat van hem.", a: "dan" },
+            { z: "De procedure is nu anders ___ voorheen.", a: "dan" },
+            { z: "Is de tweede getuige net zo betrouwbaar ___ de eerste?", a: "als" },
+            { z: "De motoragent was sneller ter plaatse ___ de auto.", a: "dan" }
         ];
 
         const trappenData = [
@@ -256,229 +254,3 @@
         window.login = () => {
             const klas = document.getElementById('classSelect').value;
             if(!klas) return alert("Selecteer je klas!");
-            window.currentClass = klas;
-            window.userName = document.getElementById('studentName').value || "Anoniem";
-            document.getElementById('screen-1').classList.remove('active');
-            document.getElementById('main-nav').style.display = 'flex';
-            window.showScreen(2);
-            setupSync();
-            setupDrawing();
-            setupGlobalDragEvents();
-            renderExercises();
-        };
-
-        window.showScreen = (n) => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            const target = document.getElementById(`screen-${n}`);
-            if(target) target.classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach((btn, i) => {
-                const screenIds = [2, 3, 35, 4, 5, 6, 7];
-                btn.classList.toggle('active', screenIds[i] === n);
-            });
-            if([3,6].includes(n)) resizeCanvas(n);
-        };
-
-        window.sendToBoard = (inputId) => {
-            const inputEl = document.getElementById(inputId);
-            const txt = inputEl.value;
-            if(!window.currentClass || !txt.trim()) return alert("Typ een zin!");
-            push(ref(db, `classes/${window.currentClass}/labels/s3`), { text: txt, x: 100, y: 100 })
-                .then(() => { alert("Toegevoegd!"); inputEl.value = ""; });
-        };
-
-        function renderExercises() {
-            // Als/Dan oefening
-            const alsDanBody = document.getElementById('alsDanTabel');
-            alsDanBody.innerHTML = alsDanZinnen.map((z, i) => `
-                <tr>
-                    <td>${i+1}</td>
-                    <td>${z.z.replace('___', `<input type="text" class="als-dan-input" oninput="checkAlsDan(${i}, this)">`)}</td>
-                </tr>
-            `).join('');
-
-            // Trappen
-            const trappenBody = document.getElementById('trappenTabel');
-            trappenBody.innerHTML = trappenData.map((d, i) => {
-                const fixedCol = i % 3; 
-                return `<tr>
-                    <td>${fixedCol === 0 ? d.s : `<input type="text" oninput="checkTrap(${i}, 's', this)">`}</td>
-                    <td>${fixedCol === 1 ? d.v : `<input type="text" oninput="checkTrap(${i}, 'v', this)">`}</td>
-                    <td>${fixedCol === 2 ? d.o : `<input type="text" oninput="checkTrap(${i}, 'o', this)">`}</td>
-                </tr>`;
-            }).join('');
-
-            // OVT
-            const ovtBody = document.getElementById('ovtTabel');
-            ovtBody.innerHTML = ovtData.map((w, i) => `
-                <tr>
-                    <td>${w}</td>
-                    <td><input type="text" class="ovt-input" oninput="checkOVT(${i}, 's', this)"></td>
-                    <td><input type="text" class="ovt-input" oninput="checkOVT(${i}, 'v', this)"></td>
-                </tr>
-            `).join('');
-        }
-
-        window.checkAlsDan = (index, el) => {
-            if(el.value.toLowerCase().trim() === alsDanZinnen[index].a) {
-                el.classList.add('correct');
-                updateScore('alsDan');
-            } else {
-                el.classList.remove('correct');
-            }
-        };
-
-        window.checkTrap = (index, type, el) => {
-            if(el.value.toLowerCase().trim() === trappenData[index][type].toLowerCase()) {
-                el.classList.add('correct');
-                updateScore('trappen');
-            } else { el.classList.remove('correct'); }
-        };
-
-        window.checkOVT = (index, type, el) => {
-            const werkwoord = ovtData[index].toLowerCase();
-            const stam = werkwoord.slice(0, -2); 
-            const verleden = (stam.endsWith('d') || stam.endsWith('t')) ? stam + 'de' : stam + 'te'; 
-            const target = type === 's' ? stam : verleden;
-            if(el.value.toLowerCase().trim() === target) el.classList.add('correct');
-            else el.classList.remove('correct');
-        };
-
-        function updateScore(type) {
-            const selector = type === 'alsDan' ? '.als-dan-input.correct' : '#trappenTabel .correct';
-            const score = document.querySelectorAll(selector).length;
-            set(ref(db, `classes/${window.currentClass}/scores/${type}/${window.userName}`), score);
-        }
-
-        function setupSync() {
-            [3, 6].forEach(id => {
-                onValue(ref(db, `classes/${window.currentClass}/labels/s${id}`), (snap) => {
-                    const container = document.getElementById(`label-layer-${id}`);
-                    if(container) {
-                        container.innerHTML = "";
-                        const data = snap.val() || {};
-                        Object.keys(data).forEach(lid => createHTMLLabel(id, lid, data[lid]));
-                    }
-                });
-                onValue(ref(db, `classes/${window.currentClass}/drawings/s${id}`), (snap) => {
-                    const canvas = document.getElementById(`canvas-${id}`);
-                    const ctx = canvas.getContext('2d');
-                    if(snap.val()) {
-                        const img = new Image();
-                        img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
-                        img.src = snap.val();
-                    } else ctx.clearRect(0,0,canvas.width,canvas.height);
-                });
-            });
-
-            onValue(ref(db, `classes/${window.currentClass}/scores/trappen`), (snap) => {
-                const scores = snap.val() || {};
-                const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0,5);
-                document.getElementById('lb-content').innerHTML = sorted.map(([name, score]) => `<div>${name}: ${score}</div>`).join('');
-            });
-
-            onValue(ref(db, `classes/${window.currentClass}/scores/alsDan`), (snap) => {
-                const scores = snap.val() || {};
-                const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]).slice(0,5);
-                document.getElementById('lb-als-dan').innerHTML = sorted.map(([name, score]) => `<div>${name}: ${score}</div>`).join('');
-            });
-        }
-
-        // --- Drag/Draw/Resize Logic (ongewijzigd) ---
-        function setupGlobalDragEvents() {
-            const onMove = (e) => {
-                if (!draggingElement) return;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                draggingElement.style.left = (clientX - dragOffset.x) + 'px';
-                draggingElement.style.top = (clientY - dragOffset.y) + 'px';
-            };
-            const onEnd = () => {
-                if (!draggingElement) return;
-                update(ref(db, `classes/${window.currentClass}/labels/s${dragSid}/${dragLid}`), { 
-                    x: parseInt(draggingElement.style.left), 
-                    y: parseInt(draggingElement.style.top) 
-                });
-                draggingElement = null;
-            };
-            window.addEventListener('mousemove', onMove); window.addEventListener('touchmove', onMove);
-            window.addEventListener('mouseup', onEnd); window.addEventListener('touchend', onEnd);
-        }
-
-        function createHTMLLabel(sid, lid, obj) {
-            const el = document.createElement('div');
-            el.className = 'draggable-label';
-            el.style.left = obj.x + 'px'; el.style.top = obj.y + 'px';
-            el.innerHTML = `<span>${obj.text}</span>`;
-            const startDrag = (e) => {
-                if (penActive[sid]) return;
-                draggingElement = el; dragSid = sid; dragLid = lid;
-                const rect = el.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                dragOffset.x = clientX - rect.left; dragOffset.y = clientY - rect.top;
-            };
-            el.addEventListener('mousedown', startDrag); el.addEventListener('touchstart', startDrag);
-            document.getElementById(`label-layer-${sid}`).appendChild(el);
-        }
-
-        window.togglePen = (id) => {
-            penActive[id] = !penActive[id];
-            document.getElementById(`pen-btn-${id}`).classList.toggle('active', penActive[id]);
-            document.getElementById(`canvas-${id}`).classList.toggle('active', penActive[id]);
-        };
-
-        window.clearBoard = (id) => remove(ref(db, `classes/${window.currentClass}/labels/s${id}`));
-        window.clearDrawings = (id) => {
-            const c = document.getElementById(`canvas-${id}`);
-            c.getContext('2d').clearRect(0,0,c.width,c.height);
-            remove(ref(db, `classes/${window.currentClass}/drawings/s${id}`));
-        };
-        window.spawnASTMA = (id) => {
-            const labels = ["Aanleiding", "Situatie", "Toedracht", "Maatregelen", "Afhandeling"];
-            labels.forEach((t, i) => push(ref(db, `classes/${window.currentClass}/labels/s${id}`), { text: t, x: 50, y: 80 + (i*50) }));
-        };
-
-        function setupDrawing() {
-            [3, 6].forEach(id => {
-                const canvas = document.getElementById(`canvas-${id}`);
-                const ctx = canvas.getContext('2d');
-                const draw = (e) => {
-                    if(!drawing || !penActive[id]) return;
-                    const rect = canvas.getBoundingClientRect();
-                    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                    ctx.lineTo(x, y); ctx.stroke();
-                };
-                canvas.onmousedown = canvas.ontouchstart = (e) => {
-                    if(!penActive[id]) return;
-                    drawing = true; ctx.beginPath();
-                    const rect = canvas.getBoundingClientRect();
-                    ctx.moveTo((e.touches ? e.touches[0].clientX : e.clientX) - rect.left, (e.touches ? e.touches[0].clientY : e.clientY) - rect.top);
-                };
-                canvas.onmousemove = canvas.ontouchmove = draw;
-                window.onmouseup = window.ontouchend = () => {
-                    if(drawing) {
-                        drawing = false;
-                        set(ref(db, `classes/${window.currentClass}/drawings/s${id}`), canvas.toDataURL());
-                    }
-                };
-            });
-        }
-
-        function resizeCanvas(id) {
-            const c = document.getElementById(`canvas-${id}`);
-            if (!c) return;
-            c.width = c.parentElement.clientWidth;
-            c.height = c.parentElement.clientHeight;
-            const ctx = c.getContext('2d');
-            ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#d32f2f';
-        }
-
-        window.resetDatabase = () => {
-            const klas = document.getElementById('classSelect').value;
-            if(!klas) return alert("Selecteer een klas!");
-            if(confirm("Alles wissen voor deze klas?")) remove(ref(db, `classes/${klas}`));
-        };
-    </script>
-</body>
-</html>
