@@ -25,25 +25,26 @@
             position: absolute; background: var(--white); border: 2px solid var(--primary); 
             padding: 6px 10px; border-radius: 4px; cursor: grab; font-weight: bold; 
             pointer-events: auto; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); white-space: nowrap; touch-action: none; z-index: 1001;
+            user-select: none;
         }
 
-        .content-container { padding: 20px; max-width: 1000px; margin: 10px auto; background: var(--white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-y: auto; width: 90%; }
+        .content-container { padding: 20px; max-width: 1000px; margin: 10px auto; background: var(--white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-y: auto; width: 90%; max-height: calc(100vh - 100px); }
         .control-panel { background: var(--white); padding: 8px; display: flex; justify-content: center; gap: 8px; border-top: 1px solid #ddd; z-index: 1500; }
         .btn-action { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
         
-        #screen-login { display: flex; justify-content: center; align-items: center; background: var(--dark); height: 100vh; width: 100%; position: absolute; z-index: 3000; }
-        .login-box { background: var(--white); padding: 30px; border-radius: 15px; text-align: center; width: 350px; }
+        #screen-login { display: flex; justify-content: center; align-items: center; background: var(--dark); height: 100vh; width: 100%; position: absolute; z-index: 3000; top: 0; left: 0; }
+        .login-box { background: var(--white); padding: 30px; border-radius: 15px; text-align: center; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: var(--primary); color: white; }
-        .correct { background-color: #c8e6c9 !important; }
-        .incorrect { background-color: #ffcdd2 !important; }
+        .correct { background-color: #c8e6c9 !important; border-color: #2e7d32 !important; color: #1b5e20; font-weight: bold; }
+        .incorrect { background-color: #ffcdd2 !important; border-color: #c62828 !important; color: #b71c1c; }
 
         .leaderboard { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; }
-        .ovt-input, .als-dan-input { width: 120px; display: inline-block; padding: 4px; margin: 0; }
+        .ovt-input, .als-dan-input { width: 130px; display: inline-block; padding: 5px; margin: 0; }
         .instr-box { background: #e3f2fd; padding: 15px; border-left: 5px solid var(--primary); border-radius: 4px; margin-bottom: 20px; }
     </style>
 </head>
@@ -59,48 +60,48 @@
         <button class="nav-btn" onclick="showScreen(7)">6. Video</button>
     </nav>
 
-    <div id="screen-1" class="screen active">
-        <div id="screen-login">
-            <div class="login-box">
-                <h2 style="color: var(--primary);">Les 5: Muteren</h2>
-                <input type="text" id="studentName" placeholder="Naam...">
-                <select id="classSelect">
-                    <option value="" disabled selected>Kies een klas...</option>
-                    <option value="Alpha">Alpha</option><option value="Bravo">Bravo</option>
-                    <option value="Charlie">Charlie</option><option value="Delta">Delta</option>
-                    <option value="Echo">Echo</option><option value="Foxtrot">Foxtrot</option>
-                    <option value="Golf">Golf</option><option value="Hotel">Hotel</option>
-                    <option value="Juliet">Juliet</option><option value="Kilo">Kilo</option>
-                    <option value="Lima">Lima</option><option value="Mike">Mike</option>
-                </select>
-                <textarea id="secretInput" placeholder="Typ hier een zin voor het digibord..."></textarea>
-                <button onclick="sendToBoard('secretInput')" style="background:#666; color:white; border:none; padding:10px; width:100%; border-radius:6px; cursor:pointer;">Stuur naar Scherm 3</button>
-                <button onclick="login()" style="background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:10px;">Start Training</button>
-                <button onclick="resetDatabase()" style="background:var(--accent); color:white; border:none; padding:10px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:20px; font-size: 0.8em;">TOTALE RESET DATABASE</button>
-            </div>
+    <!-- Inlogscherm -->
+    <div id="screen-login">
+        <div class="login-box">
+            <h2 style="color: var(--primary); margin-top: 0;">Les 5: Muteren</h2>
+            <input type="text" id="studentName" placeholder="Jouw naam...">
+            <select id="classSelect">
+                <option value="" disabled selected>Kies een klas...</option>
+                <option value="Alpha">Alpha</option><option value="Bravo">Bravo</option>
+                <option value="Charlie">Charlie</option><option value="Delta">Delta</option>
+                <option value="Echo">Echo</option><option value="Foxtrot">Foxtrot</option>
+                <option value="Golf">Golf</option><option value="Hotel">Hotel</option>
+                <option value="Juliet">Juliet</option><option value="Kilo">Kilo</option>
+                <option value="Lima">Lima</option><option value="Mike">Mike</option>
+            </select>
+            <textarea id="secretInput" rows="2" placeholder="Typ hier een zin voor het digibord..."></textarea>
+            <button onclick="sendToBoard('secretInput')" style="background:#666; color:white; border:none; padding:10px; width:100%; border-radius:6px; cursor:pointer;">Stuur naar Scherm 3</button>
+            <button onclick="login()" style="background:var(--primary); color:white; border:none; padding:15px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:10px;">Start Training</button>
+            <button onclick="resetDatabase()" style="background:var(--accent); color:white; border:none; padding:10px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:20px; font-size: 0.8em;">TOTALE RESET DATABASE</button>
         </div>
     </div>
 
+    <!-- Scherm 2: Uitleg Bijvoeglijk Naamwoord -->
     <div id="screen-2" class="screen">
         <div class="content-container">
             <h2>Bijvoeglijke naamwoorden</h2>
             <p>Het bijvoeglijk naamwoord zegt iets over een persoon, een voorwerp, een dier, een plant, of een ding.</p>
-            <p style="font-size: 1.2em;">
+            <p style="font-size: 1.3em; background: #eef2f7; padding: 10px; border-radius: 8px;">
                 Het <span style="color: var(--accent); font-weight: bold;">dikke</span>, 
                 <span style="color: var(--primary); font-weight: bold;">goedkope</span> 
                 fluitje.
             </p>
-            <img src="fluitje.png" alt="Fluitje" style="max-width: 200px; display: block; margin: 20px 0;">
             <div style="margin-top: 30px; padding: 15px; border: 1px solid #ccc; border-radius: 8px;">
-                <h4>Snel naar Digibord:</h4>
-                <textarea id="quickInputS2" placeholder="Typ een zin voor het digibord..."></textarea>
+                <h4>Snel naar Digibord sturen:</h4>
+                <textarea id="quickInputS2" rows="2" placeholder="Typ een zin voor het digibord..."></textarea>
                 <button onclick="sendToBoard('quickInputS2')" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:6px; cursor:pointer;">Stuur naar Scherm 3</button>
             </div>
         </div>
     </div>
 
+    <!-- Scherm 3: Digibord interactief -->
     <div id="screen-3" class="screen">
-        <div class="board-container" style="background-color: #f9f9f9;">
+        <div class="board-container" id="board-container-3" style="background-color: #f9f9f9;">
             <canvas id="canvas-3" class="drawing-canvas"></canvas>
             <div id="label-layer-3" class="drag-layer"></div>
         </div>
@@ -113,6 +114,7 @@
         </div>
     </div>
 
+    <!-- Scherm 3b: Als of Dan -->
     <div id="screen-35" class="screen">
         <div class="content-container">
             <h3>Scherm 3b: De Regel van de Vergrotende Trap</h3>
@@ -127,20 +129,24 @@
             </div>
             <table>
                 <thead>
-                    <tr><th>Nr.</th><th>Zin (Vul in: als / dan)</th></tr>
+                    <tr><th style="width: 50px;">Nr.</th><th>Zin (Vul in: als / dan)</th></tr>
                 </thead>
                 <tbody id="alsDanTabel"></tbody>
             </table>
             <div class="leaderboard">
-                <h4>Leaderboard: Scherm 3b Meesters</h4>
-                <div id="lb-als-dan">Nog geen scores...</div>
+                <h4>Score overzicht</h4>
+                <div id="lb-als-dan">Vul de zinnen in om je score te zien!</div>
             </div>
         </div>
     </div>
 
+    <!-- Scherm 4: Trappen van Vergelijking -->
     <div id="screen-4" class="screen">
         <div class="content-container">
             <h3>Overzicht Trappen van Vergelijking</h3>
+            <div class="instr-box">
+                Vul de ontbrekende trappen van vergelijking in en druk op enter of tab.
+            </div>
             <table>
                 <thead>
                     <tr><th>Stellende trap</th><th>Vergrotende trap</th><th>Overtreffende trap</th></tr>
@@ -148,18 +154,19 @@
                 <tbody id="trappenTabel"></tbody>
             </table>
             <div class="leaderboard" id="leaderboardTrappen">
-                <h4>Leaderboard (Top 5)</h4>
-                <div id="lb-content">Nog geen scores...</div>
+                <h4>Score</h4>
+                <div id="lb-content">0 / 20 correct</div>
             </div>
         </div>
     </div>
 
+    <!-- Scherm 5: OVT Zwakke Werkwoorden -->
     <div id="screen-5" class="screen">
         <div class="content-container">
             <h3>OVT: Zwakke werkwoorden (d/t)</h3>
-            <div class="instr-box" style="background: #e3f2fd;">
-                <strong>Instructie:</strong> Gebruik 't kofschip-x. <br>
-                <em>Voorbeeld:</em> Antwoorden -> Stam: antwoord -> OVT: antwoordde
+            <div class="instr-box">
+                <strong>Instructie:</strong> Bepaal de stam en gebruik 't kofschip-x.<br>
+                <em>Voorbeeld:</em> Antwoorden &rarr; Stam: <b>antwoord</b> &rarr; OVT: <b>antwoordde</b>
             </div>
             <table>
                 <thead>
@@ -170,25 +177,31 @@
         </div>
     </div>
 
+    <!-- Scherm 6: ASTMA Digibord -->
     <div id="screen-6" class="screen">
-        <div class="board-container" style="background-image: url('Q1mutatieles5.png');">
+        <div class="board-container" id="board-container-6" style="background-color: #eef2f7;">
             <canvas id="canvas-6" class="drawing-canvas"></canvas>
             <div id="label-layer-6" class="drag-layer"></div>
         </div>
         <div class="control-panel">
             <button class="btn-action" onclick="togglePen(6)" id="pen-btn-6">🖊️ Pen</button>
             <button class="btn-action" onclick="spawnASTMA(6)" style="background:var(--primary); color:white;">Spawn ASTMA</button>
-            <button class="btn-action" onclick="clearBoard(6)">Wis Labels</button>
+            <button class="btn-action" onclick="clearDrawings(6)">🧹 Wis Tekening</button>
+            <button class="btn-action" onclick="clearBoard(6)" style="background:var(--accent); color:white;">🗑️ Wis Labels</button>
         </div>
     </div>
 
+    <!-- Scherm 7: Video -->
     <div id="screen-7" class="screen">
-        <iframe src="https://www.youtube.com/embed/BmEYOYBr1t8?end=23" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>
+        <div class="content-container" style="height: 90%;">
+            <h3>Instructievideo / Casus</h3>
+            <iframe id="video-frame" src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" style="width:100%; height:80%; border:none; border-radius:8px;" allowfullscreen></iframe>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, push, remove, update, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, push, remove, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyA3_rzoZOWytlyAbYKKe_WuFlD8z2WvbX4",
@@ -196,17 +209,18 @@
             databaseURL: "https://aangifteq2les1-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "aangifteq2les1",
         };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+        } catch (e) {
+            console.warn("Firebase kon niet geladen worden. Lokale modus is actief.", e);
+        }
 
         window.currentClass = "";
         window.userName = "";
         let penActive = { 3: false, 6: false };
-        let drawing = false;
-        let draggingElement = null;
-        let dragSid = null;
-        let dragLid = null;
-        let dragOffset = { x: 0, y: 0 };
 
         const alsDanZinnen = [
             { z: "De verdachte rende harder ___ de agent.", a: "dan" },
@@ -249,16 +263,322 @@
             {s: "Snel", v: "sneller", o: "snelst"}
         ];
 
-const ovtData = [
+        const ovtData = [
             "Antwoorden", "Branden", "Landen", "Melden", "Schudden", 
             "Wenden", "Zetten", "Praten", "Lachen", "Werken",
             "Wachten", "Posten", "Rusten", "Fietsen", "Mixen", 
             "Krabben", "Bloeden", "Doden", "Laden", "Redden",
             "Smeden", "Stoten", "Vatten", "Plakken", "Koken", 
             "Schoppen", "Puffen", "Sausen", "Draaien", "Maaien",
-            "Missen", "Misten" // De didactische instinkers
+            "Missen", "Misten"
         ];
 
+        // --- INLOGGEN ---
         window.login = () => {
+            const naam = document.getElementById('studentName').value.trim();
             const klas = document.getElementById('classSelect').value;
+
+            if(!naam) return alert("Vul eerst je naam in!");
             if(!klas) return alert("Selecteer je klas!");
+
+            window.userName = naam;
+            window.currentClass = klas;
+
+            // Verberg inlogscherm en toon navigatie
+            document.getElementById('screen-login').style.display = 'none';
+            document.getElementById('main-nav').style.display = 'flex';
+
+            // Start op scherm 2
+            window.showScreen(2);
+
+            // Tabellen vullen
+            buildAlsDanTable();
+            buildTrappenTable();
+            buildOvtTable();
+
+            // Firebase listeners starten
+            setupBoardSync(3);
+            setupBoardSync(6);
+        };
+
+        // --- SCHERMEN WISSELEN ---
+        window.showScreen = (id) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            const targetScreen = document.getElementById(`screen-${id}`);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
+
+            const navIndex = { 2: 0, 3: 1, 35: 2, 4: 3, 5: 4, 6: 5, 7: 6 };
+            const btns = document.querySelectorAll('.nav-btn');
+            if (navIndex[id] !== undefined && btns[navIndex[id]]) {
+                btns[navIndex[id]].classList.add('active');
+            }
+
+            if (id === 3 || id === 6) {
+                initCanvas(id);
+            }
+        };
+
+        // --- DIGIBORD & LABELS ---
+        window.sendToBoard = (inputId) => {
+            const input = document.getElementById(inputId);
+            const text = input.value.trim();
+            if (!text) return;
+
+            addLabel(3, text, 50, 50);
+            input.value = "";
+            alert("Label geplaatst op Scherm 3!");
+        };
+
+        function addLabel(screenId, text, x, y, key = null) {
+            const layer = document.getElementById(`label-layer-${screenId}`);
+            if (!layer) return;
+
+            const label = document.createElement('div');
+            label.className = 'draggable-label';
+            label.innerText = text;
+            label.style.left = `${x}px`;
+            label.style.top = `${y}px`;
+
+            let isDragging = false;
+            let startX, startY;
+
+            const onPointerDown = (e) => {
+                isDragging = true;
+                label.style.cursor = 'grabbing';
+                startX = e.clientX - label.offsetLeft;
+                startY = e.clientY - label.offsetTop;
+                label.setPointerCapture(e.pointerId);
+            };
+
+            const onPointerMove = (e) => {
+                if (!isDragging) return;
+                const newX = e.clientX - startX;
+                const newY = e.clientY - startY;
+                label.style.left = `${newX}px`;
+                label.style.top = `${newY}px`;
+            };
+
+            const onPointerUp = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                label.style.cursor = 'grab';
+                try { label.releasePointerCapture(e.pointerId); } catch(err){}
+                
+                if (db && window.currentClass && key) {
+                    set(ref(db, `boards/${window.currentClass}/screen-${screenId}/labels/${key}`), {
+                        text: text,
+                        x: parseInt(label.style.left),
+                        y: parseInt(label.style.top)
+                    });
+                }
+            };
+
+            label.addEventListener('pointerdown', onPointerDown);
+            label.addEventListener('pointermove', onPointerMove);
+            label.addEventListener('pointerup', onPointerUp);
+
+            layer.appendChild(label);
+
+            if (db && window.currentClass && !key) {
+                push(ref(db, `boards/${window.currentClass}/screen-${screenId}/labels`), {
+                    text: text,
+                    x: x,
+                    y: y
+                });
+            }
+        }
+
+        window.clearBoard = (screenId) => {
+            const layer = document.getElementById(`label-layer-${screenId}`);
+            if (layer) layer.innerHTML = "";
+            if (db && window.currentClass) {
+                remove(ref(db, `boards/${window.currentClass}/screen-${screenId}/labels`));
+            }
+        };
+
+        window.spawnASTMA = (screenId) => {
+            const labels = [
+                "A - Aanleiding",
+                "S - Situatie",
+                "T - Toedracht / Treffen",
+                "M - Maatregel",
+                "A - Afhandeling"
+            ];
+            labels.forEach((txt, idx) => {
+                addLabel(screenId, txt, 50, 40 + (idx * 55));
+            });
+        };
+
+        function setupBoardSync(screenId) {
+            if (!db || !window.currentClass) return;
+            const labelsRef = ref(db, `boards/${window.currentClass}/screen-${screenId}/labels`);
+            onValue(labelsRef, (snapshot) => {
+                const data = snapshot.val();
+                const layer = document.getElementById(`label-layer-${screenId}`);
+                if (!layer) return;
+                layer.innerHTML = "";
+                if (data) {
+                    Object.keys(data).forEach(k => {
+                        const l = data[k];
+                        addLabel(screenId, l.text, l.x, l.y, k);
+                    });
+                }
+            });
+        }
+
+        // --- TEKENEN OP CANVAS ---
+        window.togglePen = (screenId) => {
+            penActive[screenId] = !penActive[screenId];
+            const canvas = document.getElementById(`canvas-${screenId}`);
+            const btn = document.getElementById(`pen-btn-${screenId}`);
+            if (penActive[screenId]) {
+                canvas.classList.add('active');
+                btn.style.background = 'var(--accent)';
+                btn.style.color = 'white';
+            } else {
+                canvas.classList.remove('active');
+                btn.style.background = '';
+                btn.style.color = '';
+            }
+        };
+
+        function initCanvas(screenId) {
+            const canvas = document.getElementById(`canvas-${screenId}`);
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            const ctx = canvas.getContext('2d');
+
+            let drawing = false;
+
+            canvas.onpointerdown = (e) => {
+                if (!penActive[screenId]) return;
+                drawing = true;
+                ctx.beginPath();
+                ctx.moveTo(e.offsetX, e.offsetY);
+                ctx.strokeStyle = '#d32f2f';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+            };
+
+            canvas.onpointermove = (e) => {
+                if (!drawing || !penActive[screenId]) return;
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            };
+
+            canvas.onpointerup = () => { drawing = false; };
+            canvas.onpointerleave = () => { drawing = false; };
+        }
+
+        window.clearDrawings = (screenId) => {
+            const canvas = document.getElementById(`canvas-${screenId}`);
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        };
+
+        // --- SCHERM 3b: ALS / DAN OEFENING ---
+        function buildAlsDanTable() {
+            const tbody = document.getElementById('alsDanTabel');
+            tbody.innerHTML = "";
+            alsDanZinnen.forEach((item, index) => {
+                const parts = item.z.split("___");
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        ${parts[0]}
+                        <input type="text" class="als-dan-input" data-ans="${item.a}" placeholder="als / dan">
+                        ${parts[1] || ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.als-dan-input').forEach(input => {
+                input.addEventListener('input', checkAlsDanScores);
+            });
+        }
+
+        function checkAlsDanScores() {
+            let correct = 0;
+            const inputs = document.querySelectorAll('.als-dan-input');
+            inputs.forEach(input => {
+                const val = input.value.trim().toLowerCase();
+                const expected = input.getAttribute('data-ans');
+                if (val === expected) {
+                    input.className = "als-dan-input correct";
+                    correct++;
+                } else if (val.length > 0) {
+                    input.className = "als-dan-input incorrect";
+                } else {
+                    input.className = "als-dan-input";
+                }
+            });
+            document.getElementById('lb-als-dan').innerHTML = `<b>${correct}</b> van de ${inputs.length} zinnen correct!`;
+        }
+
+        // --- SCHERM 4: TRAPPEN VAN VERGELIJKING ---
+        function buildTrappenTable() {
+            const tbody = document.getElementById('trappenTabel');
+            tbody.innerHTML = "";
+            trappenData.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${item.s}</b></td>
+                    <td><input type="text" class="trappen-input" data-ans="${item.v}" placeholder="vergrotende trap..."></td>
+                    <td><input type="text" class="trappen-input" data-ans="${item.o}" placeholder="overtreffende trap..."></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.trappen-input').forEach(input => {
+                input.addEventListener('input', () => {
+                    const val = input.value.trim().toLowerCase();
+                    const ans = input.getAttribute('data-ans').toLowerCase();
+                    if (val === ans) {
+                        input.className = "trappen-input correct";
+                    } else if (val.length > 0) {
+                        input.className = "trappen-input incorrect";
+                    } else {
+                        input.className = "trappen-input";
+                    }
+                    const totalCorrect = document.querySelectorAll('.trappen-input.correct').length;
+                    document.getElementById('lb-content').innerText = `${totalCorrect} / ${trappenData.length * 2} correct`;
+                });
+            });
+        }
+
+        // --- SCHERM 5: OVT OEFENING ---
+        function buildOvtTable() {
+            const tbody = document.getElementById('ovtTabel');
+            tbody.innerHTML = "";
+            ovtData.forEach(ww => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${ww}</b></td>
+                    <td><input type="text" class="ovt-input" placeholder="stam..."></td>
+                    <td><input type="text" class="ovt-input" placeholder="ovt enkelvoud..."></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- DATABASE RESET ---
+        window.resetDatabase = () => {
+            if (!confirm("Weet je zeker dat je alle digiborden wilt wissen?")) return;
+            if (db) {
+                remove(ref(db, 'boards')).then(() => alert("Database gewist!"));
+            } else {
+                alert("Geen database-verbinding.");
+            }
+        };
+    </script>
+</body>
+</html>
