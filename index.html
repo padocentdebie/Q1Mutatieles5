@@ -28,8 +28,15 @@
             user-select: none;
         }
 
+        /* --- NIEUW: PDF-venster in het ASTMA-bord --- */
+        .pdf-window { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .pdf-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; background: white; z-index: 2; }
+        .pdf-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #8899aa; font-size: 1.15em; text-align: center; padding: 30px; pointer-events: none; z-index: 2; }
+        .pdf-placeholder small { font-size: 0.8em; color: #a5b0c0; margin-top: 8px; line-height: 1.5; }
+        .pdf-badge { background: #eef2f7; border: 1px solid #ccd5e0; border-radius: 5px; padding: 8px 10px; font-size: 0.8em; color: var(--dark); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: center; }
+
         .content-container { padding: 20px; max-width: 1000px; margin: 10px auto; background: var(--white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-y: auto; width: 90%; max-height: calc(100vh - 100px); }
-        .control-panel { background: var(--white); padding: 8px; display: flex; justify-content: center; gap: 8px; border-top: 1px solid #ddd; z-index: 1500; }
+        .control-panel { background: var(--white); padding: 8px; display: flex; justify-content: center; flex-wrap: wrap; align-items: center; gap: 8px; border-top: 1px solid #ddd; z-index: 1500; }
         .btn-action { padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
         
         #screen-login { display: flex; justify-content: center; align-items: center; background: var(--dark); height: 100vh; width: 100%; position: absolute; z-index: 3000; top: 0; left: 0; }
@@ -177,13 +184,29 @@
         </div>
     </div>
 
-    <!-- Scherm 6: ASTMA Digibord -->
+    <!-- Scherm 6: ASTMA Digibord met gedeeld PDF-venster -->
     <div id="screen-6" class="screen">
         <div class="board-container" id="board-container-6" style="background-color: #eef2f7;">
+            <!-- GEDEELD PDF-VENSTER (onder de tekenlaag en de sleep-labels) -->
+            <div class="pdf-window" id="pdf-window-6">
+                <div class="pdf-placeholder" id="pdf-placeholder-6">
+                    📄 <strong>Nog geen PDF geladen</strong>
+                    <small>
+                        Kies hieronder via <b>"🔍 PDF Zoeken"</b> een pdf van je harde schijf of USB-stick.<br>
+                        De PDF verschijnt live in dit venster bij <b>alle ingelogden van de klas</b>.<br>
+                        Sleep de ASTMA-labels over de tekst — iedereen ziet waar ze staan.
+                    </small>
+                </div>
+                <iframe id="pdf-frame-6" class="pdf-frame" style="display:none;" title="Gedeelde ASTMA-pdf"></iframe>
+            </div>
             <canvas id="canvas-6" class="drawing-canvas"></canvas>
             <div id="label-layer-6" class="drag-layer"></div>
         </div>
         <div class="control-panel">
+            <span class="pdf-badge" id="pdf-badge-6">📄 Geen PDF geladen</span>
+            <input type="file" id="pdfInput-6" accept="application/pdf,.pdf" style="display:none;" onchange="uploadPDF(event)">
+            <button class="btn-action" onclick="document.getElementById('pdfInput-6').click()" style="background:var(--primary); color:white;">🔍 PDF Zoeken</button>
+            <button class="btn-action" onclick="removePDF()" style="background:#666; color:white;">📄 Wis PDF</button>
             <button class="btn-action" onclick="togglePen(6)" id="pen-btn-6">🖊️ Pen</button>
             <button class="btn-action" onclick="spawnASTMA(6)" style="background:var(--primary); color:white;">Spawn ASTMA</button>
             <button class="btn-action" onclick="clearDrawings(6)">🧹 Wis Tekening</button>
@@ -310,6 +333,7 @@
             // Firebase listeners starten
             setupBoardSync(3);
             setupBoardSync(6);
+            setupPDFSync(6);
         };
 
         // --- SCHERMEN WISSELEN ---
@@ -437,6 +461,66 @@
                         const l = data[k];
                         addLabel(screenId, l.text, l.x, l.y, k);
                     });
+                }
+            });
+        }
+
+        // --- SCHERM 6 (ASTMA): GEDEELD PDF-VENSTER VIA DE DATABASE ---
+        const MAX_PDF_MB = 4;
+
+        window.uploadPDF = (event) => {
+            const file = event.target.files[0];
+            event.target.value = "";
+            if (!file) return;
+
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                return alert("Dit is geen PDF-bestand. Kies een bestand met de extensie .pdf.");
+            }
+            if (file.size > MAX_PDF_MB * 1024 * 1024) {
+                return alert(`Deze PDF is te groot: ${(file.size / 1048576).toFixed(1)} MB.\nMaximaal ${MAX_PDF_MB} MB, anders kan de database hem niet met de klas delen.`);
+            }
+            if (!db || !window.currentClass) {
+                return alert("Geen database-verbinding. Log eerst in.");
+            }
+            if (!confirm(`PDF "${file.name}" delen met klas ${window.currentClass}?\nAlle ingelogden zien deze PDF live in het ASTMA-scherm.`)) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                set(ref(db, `boards/${window.currentClass}/screen-6/pdf`), {
+                    data: reader.result,
+                    name: file.name,
+                    by: window.userName,
+                    ts: Date.now()
+                }).catch(err => alert("PDF delen mislukt: " + err.message));
+            };
+            reader.onerror = () => alert("Kon het bestand niet lezen.");
+            reader.readAsDataURL(file);
+        };
+
+        window.removePDF = () => {
+            if (!db || !window.currentClass) return;
+            if (!confirm("PDF voor de hele klas wissen?")) return;
+            remove(ref(db, `boards/${window.currentClass}/screen-6/pdf`)).catch(err => alert("Wissen mislukt: " + err.message));
+        };
+
+        function setupPDFSync(screenId) {
+            if (!db || !window.currentClass) return;
+            onValue(ref(db, `boards/${window.currentClass}/screen-${screenId}/pdf`), (snapshot) => {
+                const pdf = snapshot.val();
+                const frame = document.getElementById(`pdf-frame-${screenId}`);
+                const placeholder = document.getElementById(`pdf-placeholder-${screenId}`);
+                const badge = document.getElementById(`pdf-badge-${screenId}`);
+
+                if (pdf && pdf.data) {
+                    frame.src = pdf.data;
+                    frame.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    if (badge) badge.textContent = `📄 ${pdf.name} — gedeeld door ${pdf.by || 'onbekend'}`;
+                } else {
+                    frame.src = 'about:blank';
+                    frame.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    if (badge) badge.textContent = '📄 Geen PDF geladen';
                 }
             });
         }
